@@ -1428,7 +1428,10 @@ build_msg(stppmsg_t *msg)
   extern int http_server_port;
   if(stpp_system_name == NULL)
     return -1;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
   strncpy(msg->name, rstr_get(stpp_system_name), sizeof(msg->name));
+#pragma GCC diagnostic pop
   strncpy(msg->type, arch_get_system_type(), sizeof(msg->type));
   memcpy(msg->magic, "STPP", 4);
   memcpy(msg->deviceid, stpp_id, sizeof(msg->deviceid));
