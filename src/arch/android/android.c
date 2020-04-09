@@ -38,7 +38,6 @@
 #include "service.h"
 #include "networking/net.h"
 #include "ui/glw/glw.h"
-#include "prop/prop_jni.h"
 #include "android.h"
 #include "navigator.h"
 #include "arch/halloc.h"
@@ -51,9 +50,12 @@ static char android_name[PROP_VALUE_MAX];
 static char android_version[PROP_VALUE_MAX];
 static char android_serialno[PROP_VALUE_MAX];
 
+char android_intent[PATH_MAX];
+
 JavaVM *JVM;
 jclass STCore;
 prop_t *android_nav;
+int android_sdk;
 
 /**
  *
@@ -224,11 +226,14 @@ jint
 JNI_OnLoad(JavaVM *vm, void *reserved)
 {
   JVM = vm;
+  char prop[PROP_VALUE_MAX];
 
   __system_property_get("ro.product.manufacturer",  android_manufacturer);
   __system_property_get("ro.product.model",         android_model);
   __system_property_get("ro.product.name",          android_name);
   __system_property_get("ro.build.version.release", android_version);
+  __system_property_get("ro.build.version.sdk",     prop);
+  android_sdk = atoi(prop);
   __system_property_get("ro.serialno",              android_serialno);
 
   snprintf(gconf.os_info, sizeof(gconf.os_info), "%s", android_version);
@@ -239,6 +244,46 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
   return JNI_VERSION_1_6;
 }
 
+#if 0
+
+static inline int ishex(int x)
+{
+	return	(x >= '0' && x <= '9')	||
+		(x >= 'a' && x <= 'f')	||
+		(x >= 'A' && x <= 'F');
+}
+
+static int decode(const char *s, char *dec)
+{
+	char *o;
+	const char *end = s + strlen(s);
+	int c;
+
+	for (o = dec; s <= end; o++) {
+		c = *s++;
+		if (c == '+') c = ' ';
+		else if (c == '%' && (	!ishex(*s++)	||
+					!ishex(*s++)	||
+					!sscanf(s - 2, "%2x", &c)))
+			return -1;
+
+		if (dec) *o = c;
+	}
+
+	return o - dec;
+}
+
+JNIEXPORT void JNICALL
+Java_com_lonelycoder_mediaplayer_Core_coreIntent(JNIEnv *env, jobject obj, jstring j_intent)
+{
+   // strcpy(android_intent, (*env)->GetStringUTFChars(env, j_intent, 0));
+    decode((*env)->GetStringUTFChars(env, j_intent, 0), android_intent);
+    if(strstr(android_intent, "magnet:?"))
+	strcat(android_intent, "&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969%2Fannounce&tr=udp%3A%2F%2Fopen.demonii.com%3A1337&tr=udp%3A%2F%2F90.180.35.128%3A6969%2Fannonce&tr=udp%3A%2F%2F9.rarbg.to%3A2710%2Fannounce&tr=udp%3A%2F%2F9.rarbg.me%3A2710%2Fannounce&tr=udp%3A%2F%2F9.rarbg.com%3A2710%2Fannounce&tr=http%3A%2F%2Ftracker.tfile.me%2Fannounce&tr=http%3A%2F%2Fmgtracker.org%3A2710%2Fannounce&tr=http%3A%2F%2Fexplodie.org%3A6969%2Fannounce&tr=http%3A%2F%2F90.180.35.128%3A6969%2Fannonce");
+}
+#endif
+
+
 
 /**
  *
@@ -246,7 +291,19 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
 JNIEXPORT void JNICALL
 Java_com_lonelycoder_mediaplayer_Core_coreInit(JNIEnv *env, jobject obj, jstring j_settings, jstring j_cachedir, jstring j_sdcard, jstring j_android_id, jint time_24hrs, jstring j_music, jstring j_pictures, jstring j_movies, jint audio_sample_rate, jint audio_frames_per_buffer)
 {
-  trace_arch(TRACE_INFO, "Core", "Native core initializing");
+  static int initialized;
+  if(initialized)
+    return;
+  initialized = 1;
+
+  jclass c = (*env)->FindClass(env, "com/lonelycoder/mediaplayer/Core");
+  STCore = (*env)->NewGlobalRef(env, c);
+
+
+  char initmsg[128];
+  snprintf(initmsg, sizeof(initmsg), "Native core init pid %d SDK:%d",
+           getpid(), android_sdk);
+  trace_arch(TRACE_INFO, "Core", initmsg);
 
   gconf.trace_level = TRACE_DEBUG;
   gconf.time_format_system = time_24hrs ? TIME_FORMAT_24 : TIME_FORMAT_12;
@@ -260,8 +317,15 @@ Java_com_lonelycoder_mediaplayer_Core_coreInit(JNIEnv *env, jobject obj, jstring
   const char *sdcard     = (*env)->GetStringUTFChars(env, j_sdcard, 0);
   const char *android_id = (*env)->GetStringUTFChars(env, j_android_id, 0);
 
-  gconf.persistent_path = strdup(settings);
-  gconf.cache_path      = strdup(cachedir);
+  extern char *android_fs_settings_path;
+  extern char *android_fs_cache_path;
+  extern char *android_fs_sdcard_path;
+
+  android_fs_settings_path = strdup(settings);
+  android_fs_cache_path    = strdup(cachedir);
+  android_fs_sdcard_path   = strdup(sdcard);
+  gconf.persistent_path    = strdup("persistent://");
+  gconf.cache_path         = strdup("cache://");
 
   uint8_t digest[16];
 
@@ -278,7 +342,7 @@ Java_com_lonelycoder_mediaplayer_Core_coreInit(JNIEnv *env, jobject obj, jstring
   (*env)->ReleaseStringUTFChars(env, j_settings, settings);
   (*env)->ReleaseStringUTFChars(env, j_cachedir, cachedir);
   (*env)->ReleaseStringUTFChars(env, j_android_id, android_id);
-
+  (*env)->ReleaseStringUTFChars(env, j_sdcard, sdcard);
 
   gconf.concurrency =   sysconf(_SC_NPROCESSORS_CONF);
 
@@ -288,20 +352,9 @@ Java_com_lonelycoder_mediaplayer_Core_coreInit(JNIEnv *env, jobject obj, jstring
 
   main_init();
 
-  jclass c = (*env)->FindClass(env, "com/lonelycoder/mediaplayer/Core");
-  STCore = (*env)->NewGlobalRef(env, c);
-
-  prop_jni_init(env);
-
-
-  char filesdcard[PATH_MAX];
-  snprintf(filesdcard, sizeof(filesdcard), "file://%s", sdcard);
-
   service_createp("androidstorage", _p("Android Storage"),
-                  filesdcard,
-                  "storage", NULL, 0, 1, SVC_ORIGIN_SYSTEM);
+                  "es://", "storage", NULL, 0, 1, SVC_ORIGIN_SYSTEM);
 
-  (*env)->ReleaseStringUTFChars(env, j_sdcard, sdcard);
 
   android_nav = nav_spawn();
 
@@ -313,13 +366,16 @@ Java_com_lonelycoder_mediaplayer_Core_coreInit(JNIEnv *env, jobject obj, jstring
 }
 
 
-/**
- *
- */
 JNIEXPORT void JNICALL
-Java_com_lonelycoder_mediaplayer_Core_pollCourier(JNIEnv *env, jobject obj)
+Java_com_lonelycoder_mediaplayer_Core_openUri(JNIEnv *env, jobject obj, jstring j_uri)
 {
-  prop_jni_poll();
+  const char *uri = (*env)->GetStringUTFChars(env, j_uri, 0);
+
+  event_t *e = event_create_openurl(.url  = uri);
+  prop_send_ext_event(prop_create(android_nav, "eventSink"), e);
+  event_release(e);
+
+  (*env)->ReleaseStringUTFChars(env, j_uri, uri);
 }
 
 

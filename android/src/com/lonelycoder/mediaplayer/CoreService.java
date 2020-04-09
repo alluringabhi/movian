@@ -7,20 +7,16 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Binder;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.os.Build;
-
 import android.util.Log;
 
 import android.media.AudioManager;
 
 public class CoreService extends Service {
-
-    private final IBinder mBinder = new LocalBinder();
 
     final IntentFilter networkChecker = new IntentFilter();
 
@@ -31,15 +27,9 @@ public class CoreService extends Service {
             }
         };
 
-
-    public class LocalBinder extends Binder {
-        CoreService getService() {
-            return CoreService.this;
-        }
-    }
-
     @Override
     public void onCreate() {
+        Log.d("Movian", "Coreservice Init");
 
         networkChecker.addAction(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
         Core.init(this);
@@ -53,7 +43,7 @@ public class CoreService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return mBinder;
+        return null;
     }
 
     public int getSystemAudioSampleRate() {
@@ -75,5 +65,5 @@ public class CoreService extends Service {
         }
         return 0;
     }
-
 }
+

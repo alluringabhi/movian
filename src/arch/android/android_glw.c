@@ -35,7 +35,85 @@
 #include "android.h"
 #include "android_glw.h"
 
+static android_glw_root_t *permission_glw_root;
+static pthread_mutex_t permission_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t permission_cond = PTHREAD_COND_INITIALIZER;
 
+static enum {
+  PERMISSION_STATE_NONE,
+  PERMISSION_STATE_WAITING,
+  PERMISSION_STATE_APPROVED,
+  PERMISSION_STATE_DENIED,
+} permission_state;
+
+
+
+int
+android_get_permission(const char *permission, int interactive)
+{
+  extern int android_sdk;
+  if(android_sdk < 23)
+    return 1; // Before Android 6.0, permissions are always granted
+  jmethodID mid;
+  JNIEnv *env;
+  (*JVM)->GetEnv(JVM, (void **)&env, JNI_VERSION_1_6);
+  jstring jstr = (*env)->NewStringUTF(env, permission);
+
+  mid = (*env)->GetStaticMethodID(env, STCore, "checkPermission",
+                                  "(Ljava/lang/String;)Z");
+
+  int ok = (*env)->CallStaticBooleanMethod(env, STCore, mid, jstr);
+
+  if(ok)
+    return 1;
+
+  if(!interactive)
+    return 0;
+
+  pthread_mutex_lock(&permission_mutex);
+
+  while(permission_state != PERMISSION_STATE_NONE)
+    pthread_cond_wait(&permission_cond, &permission_mutex);
+
+  if(permission_glw_root == NULL) {
+    permission_state = PERMISSION_STATE_NONE;
+    pthread_mutex_unlock(&permission_mutex);
+    return 0;
+  }
+
+  permission_state = PERMISSION_STATE_WAITING;
+
+  jclass class = (*env)->GetObjectClass(env, permission_glw_root->agr_vrp);
+  mid = (*env)->GetMethodID(env, class, "askPermission",
+                            "(Ljava/lang/String;)V");
+  (*env)->CallVoidMethod(env, permission_glw_root->agr_vrp, mid, jstr);
+
+  while(permission_state == PERMISSION_STATE_WAITING)
+    pthread_cond_wait(&permission_cond, &permission_mutex);
+
+  const int r = permission_state;
+  permission_state = PERMISSION_STATE_NONE;
+  pthread_cond_broadcast(&permission_cond);
+  pthread_mutex_unlock(&permission_mutex);
+  return r == PERMISSION_STATE_APPROVED;
+}
+
+
+
+/**
+ *
+ */
+JNIEXPORT void JNICALL
+Java_com_lonelycoder_mediaplayer_Core_permissionResult(JNIEnv *env, jboolean ok)
+{
+  pthread_mutex_lock(&permission_mutex);
+  permission_state = ok ? PERMISSION_STATE_APPROVED : PERMISSION_STATE_DENIED;
+  pthread_cond_broadcast(&permission_cond);
+  pthread_mutex_unlock(&permission_mutex);
+
+}
+
+extern char android_intent[PATH_MAX];
 static void
 dis_screensaver_callback(void *opaque, int value)
 {
@@ -101,6 +179,11 @@ Java_com_lonelycoder_mediaplayer_Core_glwCreate(JNIEnv *env,
                    PROP_TAG_COURIER, agr->gr.gr_courier,
                    NULL);
 
+  pthread_mutex_lock(&permission_mutex);
+  permission_glw_root = agr;
+  pthread_mutex_unlock(&permission_mutex);
+
+
   glw_load_universe(&agr->gr);
   return (intptr_t)agr;
 }
@@ -125,6 +208,12 @@ Java_com_lonelycoder_mediaplayer_Core_glwFini(JNIEnv *env,
 {
   android_glw_root_t *agr = (android_glw_root_t *)id;
   glw_root_t *gr = &agr->gr;
+
+  pthread_mutex_lock(&permission_mutex);
+  permission_glw_root = NULL;
+  permission_state = PERMISSION_STATE_DENIED;
+  pthread_cond_broadcast(&permission_cond);
+  pthread_mutex_unlock(&permission_mutex);
 
   glw_lock(gr);
   // Calling twice will unload all textures, etc
@@ -175,6 +264,31 @@ Java_com_lonelycoder_mediaplayer_Core_glwResize(JNIEnv *env,
   TRACE(TRACE_INFO, "GLW", "Resized to %d x %d", width, height);
   agr->gr.gr_width  = width;
   agr->gr.gr_height = height;
+
+  if(android_intent[0])
+  {
+    TRACE(TRACE_INFO, "INTENT", "Loading: %s", android_intent);
+    nav_open(android_intent, NULL);
+    android_intent[0]=0;
+  }
+
+}
+
+
+JNIEXPORT void JNICALL
+Java_com_lonelycoder_mediaplayer_Core_glwFlush(JNIEnv *env,
+                                               jobject obj,
+                                               jint id)
+{
+  android_glw_root_t *agr = (android_glw_root_t *)id;
+  glw_root_t *gr = &agr->gr;
+  TRACE(TRACE_INFO, "GLW", "Flushed");
+  glw_lock(gr);
+  // Calling twice will unload all textures, etc
+  glw_reap(gr);
+  glw_reap(gr);
+  glw_flush(gr);
+  glw_unlock(gr);
 }
 
 

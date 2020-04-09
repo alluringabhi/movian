@@ -39,7 +39,20 @@ LIB=${BUILDDIR}/libmovian
 include ${BUILDDIR}/config.mak
 
 CFLAGS_std += -Wall -Werror -Wwrite-strings -Wno-deprecated-declarations \
+		-Wmissing-prototypes -Wno-multichar -Iext/dvd -std=gnu99
+
+GCCVERSIONGTEQ8 := $(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 8)
+ifeq "$(GCCVERSIONGTEQ8)" "1"
+    CFLAGS_std += -Wno-stringop-truncation 
+#-Wno-format-truncation
+endif
+
+VMIR_CFLAGS = ${CFLAGS_std}
+
+VMIR_CFLAGS +=  -Wall -Werror -Wno-restrict -Wwrite-strings -Wno-deprecated-declarations \
 		-Wmissing-prototypes -Wno-multichar  -Iext/dvd -std=gnu99
+
+
 
 CFLAGS = ${CFLAGS_std} ${OPTFLAGS}
 
@@ -755,7 +768,8 @@ SRCS-${CONFIG_VMIR} += \
 	src/np/np_backend.c \
 	src/np/np_stats.c \
 
-${BUILDDIR}/ext/vmir/src/vmir.o : CFLAGS = ${CFLAGS_std} ${OPTFLAGS} -DVMIR_USE_TLSF -Iext/tlsf
+
+${BUILDDIR}/ext/vmir/src/vmir.o : CFLAGS = ${VMIR_CFLAGS} ${OPTFLAGS} -DVMIR_USE_TLSF -Iext/tlsf
 
 ${BUILDDIR}/src/np/%.o : CFLAGS = ${CFLAGS_std} ${OPTFLAGS} -DNATIVEPLUGIN_HOST -Inativeplugin/include/
 
@@ -818,6 +832,10 @@ BUNDLE_OBJS=$(BUNDLE_SRCS:%.c=%.o)
 CFLAGS_com += -g -funsigned-char ${OPTFLAGS} ${CFLAGS_dbg}
 CFLAGS_com += -iquote${BUILDDIR} -iquote${C}/src -iquote${C}
 
+ifeq "$(GCCVERSIONGTEQ8)" "1"
+    CFLAGS_com += -Wno-format-truncation -Wno-incompatible-pointer-types -Wno-int-conversion
+endif
+
 # Tools
 
 MKBUNDLE = $(C)/support/mkbundle
@@ -859,6 +877,7 @@ ${PROG}.ziptail: $(OBJS) $(ALLDEPS) $(BUILDDIR)/support/dataroot/ziptail.o
 
 ${BUILDDIR}/%.o: %.c $(ALLDEPS)
 	@mkdir -p $(dir $@)
+	
 	$(CC) -MD -MP $(CFLAGS_com) $(CFLAGS) $(CFLAGS_cfg) -c -o $@ $(C)/$<
 
 ${BUILDDIR}/%.o: %.S $(ALLDEPS)
