@@ -48,7 +48,7 @@ endif
 
 VMIR_CFLAGS = ${CFLAGS_std}
 
-VMIR_CFLAGS +=  -Wall -Werror -Wno-restrict -Wwrite-strings -Wno-deprecated-declarations \
+VMIR_CFLAGS +=  -Wall -Werror -Wwrite-strings -Wno-deprecated-declarations \
 		-Wmissing-prototypes -Wno-multichar  -Iext/dvd -std=gnu99
 
 ifeq "$(GCCVERSIONGTEQ8)" "1"
