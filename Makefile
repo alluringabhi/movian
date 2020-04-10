@@ -44,7 +44,6 @@ CFLAGS_std += -Wall -Werror -Wwrite-strings -Wno-deprecated-declarations \
 GCCVERSIONGTEQ8 := $(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 8)
 ifeq "$(GCCVERSIONGTEQ8)" "1"
     CFLAGS_std += -Wno-stringop-truncation 
-#-Wno-format-truncation
 endif
 
 VMIR_CFLAGS = ${CFLAGS_std}
@@ -52,7 +51,9 @@ VMIR_CFLAGS = ${CFLAGS_std}
 VMIR_CFLAGS +=  -Wall -Werror -Wno-restrict -Wwrite-strings -Wno-deprecated-declarations \
 		-Wmissing-prototypes -Wno-multichar  -Iext/dvd -std=gnu99
 
-
+ifeq "$(GCCVERSIONGTEQ8)" "1"
+    VMIR_CFLAGS += -Wno-restrict
+endif
 
 CFLAGS = ${CFLAGS_std} ${OPTFLAGS}
 
