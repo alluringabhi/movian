@@ -56,6 +56,13 @@ set_torrent_upload_speed(void *opaque, int v)
   btg.btg_max_send_speed = v * (1000000 / 8 / 10);
 }
 
+static void
+set_torrent_max_peers_torrent(void *opaque, int v)
+{
+  // How many bytes we should refill send limiter for every tenth second
+  btg.btg_max_peers_torrent = v;
+}
+
 
 void
 torrent_settings_init(void)
@@ -89,6 +96,16 @@ torrent_settings_init(void)
                  SETTING_RANGE(0, 100),
                  SETTING_UNIT_CSTR("Mbit/s"),
                  SETTING_STORE("bittorrent", "uploadspeed"),
+                 NULL);
+
+  setting_create(SETTING_INT, s, SETTINGS_INITIAL_UPDATE,
+                 SETTING_TITLE(_p("Maximum number of peers")),
+                 SETTING_MUTEX(&bittorrent_mutex),
+                 SETTING_CALLBACK(set_torrent_max_peers_torrent, NULL),
+                 SETTING_VALUE(150),
+                 SETTING_RANGE(20, 300),
+                 SETTING_UNIT_CSTR("peers"),
+                 SETTING_STORE("bittorrent", "maxpeerstorrent"),
                  NULL);
 
   setting_create(SETTING_INT, s, SETTINGS_INITIAL_UPDATE,

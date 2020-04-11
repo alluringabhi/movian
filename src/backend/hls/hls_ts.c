@@ -1161,7 +1161,7 @@ hls_ts_demuxer_read(hls_demuxer_t *hd)
            * of unluck that can happen between when we load the
            * playlist and try to open the segment, so retry a few times
            */
-          if(attempts < 5) {
+          if(attempts < 10) {
             attempts++;
             hs = TAILQ_NEXT(hs, hs_link);
             if(hs != NULL) {

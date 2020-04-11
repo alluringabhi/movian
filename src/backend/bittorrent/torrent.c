@@ -1801,7 +1801,7 @@ static void
 torrent_early_init(void)
 {
   btg.btg_max_peers_global = 60;
-  btg.btg_max_peers_torrent = 50;
+  //btg.btg_max_peers_torrent = 150;
 
   asyncio_timer_init(&torrent_periodic_timer, torrent_periodic, NULL);
 

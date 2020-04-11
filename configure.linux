@@ -104,7 +104,7 @@ enable httpserver
 enable timegm
 enable inotify
 enable realpath
-enable webkit
+#enable webkit
 enable librtmp
 enable vmir
 

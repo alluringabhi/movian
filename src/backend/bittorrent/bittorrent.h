@@ -69,6 +69,7 @@ typedef struct bt_global {
 
   int btg_free_space_percentage;
   int btg_max_send_speed;
+  int btg_max_num_connections;
 
   uint64_t btg_total_bytes_inactive;
   uint64_t btg_total_bytes_active;
