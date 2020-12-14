@@ -1,6 +1,7 @@
 [submodule "ext/libav"]
 	path = ext/libav
-	url = git://github.com/andoma/libav.git
+	url = https://github.com/czz/libav.git
+	branch = movian-master
 [submodule "ext/rtmpdump"]
 	path = ext/rtmpdump
 	url = git://github.com/andoma/rtmpdump.git
