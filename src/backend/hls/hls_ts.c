@@ -855,7 +855,7 @@ process_es(ts_es_t *te, const uint8_t *tsb, ts_demuxer_t *td, hls_segment_t *hs)
 
   if(pusi) {
     if(te->te_buf != NULL)
-      memset(te->te_buf + te->te_packet_size, 0, FF_INPUT_BUFFER_PADDING_SIZE);
+      memset(te->te_buf + te->te_packet_size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
     emit_packet(te, td, hs);
     te->te_packet_size = 0;
     te->te_current_seq = hs->hs_seq;
@@ -864,7 +864,7 @@ process_es(ts_es_t *te, const uint8_t *tsb, ts_demuxer_t *td, hls_segment_t *hs)
   if(te->te_packet_size + size > te->te_buf_size) {
     te->te_buf_size = te->te_buf_size * 2 + size;
     te->te_buf = myreallocf(te->te_buf,
-                            te->te_buf_size + FF_INPUT_BUFFER_PADDING_SIZE);
+                            te->te_buf_size + AV_INPUT_BUFFER_PADDING_SIZE);
     if(te->te_buf == NULL) {
       te->te_buf_size = 0;
       return;

@@ -415,13 +415,13 @@ media_codec_create_lavc(media_codec_t *cw, const media_codec_params_t *mcp,
 
   if(mcp != NULL && mcp->extradata != NULL && !cw->ctx->extradata) {
     cw->ctx->extradata = calloc(1, mcp->extradata_size +
-				FF_INPUT_BUFFER_PADDING_SIZE);
+				AV_INPUT_BUFFER_PADDING_SIZE);
     memcpy(cw->ctx->extradata, mcp->extradata, mcp->extradata_size);
     cw->ctx->extradata_size = mcp->extradata_size;
   }
 
   if(mcp && mcp->cheat_for_speed)
-    cw->ctx->flags2 |= CODEC_FLAG2_FAST;
+    cw->ctx->flags2 |= AV_CODEC_FLAG2_FAST;
 
   if(codec->type == AVMEDIA_TYPE_VIDEO) {
 

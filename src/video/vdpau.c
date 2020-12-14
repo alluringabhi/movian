@@ -24,6 +24,7 @@
 #include "vdpau.h"
 #include "video/video_decoder.h"
 #include "libav.h"
+#include <libavutil/mem.h>
 
 /**
  *
