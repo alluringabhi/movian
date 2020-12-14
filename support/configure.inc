@@ -381,7 +381,6 @@ EOF
 
 }
 
-
 update_ext_submodule() {
     echo "Updating $1, submodule status before update"
     git submodule status ext/$1
@@ -390,14 +389,10 @@ update_ext_submodule() {
     git submodule status ext/$1
 }
 
-
-
-
-
 libav_setup() {
     update_ext_submodule libav
     echo "Configuring libav..."
-    
+
     LIBAV_BUILD_DIR=${BUILDDIR}/libav/build
 
     mkdir -p "${LIBAV_BUILD_DIR}"
