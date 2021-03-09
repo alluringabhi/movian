@@ -1,0 +1,11 @@
+Package: showtime-dbg
+Source: showtime
+Version: 5.0.566
+Architecture: amd64
+Maintainer: Andreas Öman <andreas@lonelycoder.com>
+Installed-Size: 21442
+Depends: showtime (= 5.0.566)
+Section: debug
+Priority: extra
+Description: Debug symbols for Showtime
+Build-Ids: f628709449b7afcf9f3d8ade4d8361ab42dc6ec8

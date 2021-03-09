@@ -4,7 +4,8 @@
 	branch = movian-master
 [submodule "ext/rtmpdump"]
 	path = ext/rtmpdump
-	url = git://github.com/andoma/rtmpdump.git
+	url = https://github.com/czz/rtmpdump.git
+	branch = master
 [submodule "ext/libntfs_ext"]
 	path = ext/libntfs_ext
 	url = https://github.com/andoma/libntfs_ext.git

@@ -95,8 +95,8 @@ enable gu
 enable avahi
 enable libxss
 enable libxv
-#enable openssl
-enable polarssl
+enable openssl
+#enable polarssl
 enable locatedb
 enable vdpau
 enable libxxf86vm
@@ -526,6 +526,7 @@ if enabled openssl; then
     if pkg-config openssl; then
 	echo >>${CONFIG_MAK} "LDFLAGS_cfg += " `pkg-config --libs openssl`
 	echo "Using openssl:         `pkg-config --modversion openssl`"
+	echo >>${CONFIG_MAK} "CFLAGS_cfg += -Wno-unused-function"
     elif pkg-config libssl; then
 	echo >>${CONFIG_MAK} "LDFLAGS_cfg += " `pkg-config --libs libssl`
 	echo "Using libssl:          `pkg-config --modversion libssl`"
