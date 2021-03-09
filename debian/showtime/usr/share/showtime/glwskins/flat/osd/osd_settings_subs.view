@@ -1,4 +1,0 @@
-#import "osd_settings.view"
-
-OSD_SETTINGS_MENU($self.media.subtitle.settings.nodes, _("Subtitle settings"),
-                 "osd_settings_subs");

@@ -1,2 +1,0 @@
-ALTER TABLE audioitem ADD COLUMN track INTEGER DEFAULT 0;
-DELETE FROM audioitem;
