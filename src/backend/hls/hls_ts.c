@@ -423,6 +423,7 @@ handle_pmt(void *opaque, const uint8_t *ptr, int len)
         break;
 
       case 0x81:
+      case 0x06:
         te->te_codec = media_codec_create(AV_CODEC_ID_AC3, 1, NULL, NULL, NULL,
                                           td->td_mp);
         te->te_data_type = MB_AUDIO;
