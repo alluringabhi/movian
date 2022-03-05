@@ -162,6 +162,8 @@ for opt do
   ;;
   --disable-silent-rules)
   ;;
+    --disable-option-checking)
+  ;;
   *)
   common_opt $opt $optval
   esac
