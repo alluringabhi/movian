@@ -514,7 +514,7 @@ bzip2_setup()
 #
 freetype_setup()
 {
-    FREETYPE_VER="2.4.9"
+    FREETYPE_VER="2.7.1"
 
     download_file http://download.savannah.gnu.org/releases/freetype/freetype-${FREETYPE_VER}.tar.gz freetypetarball
 
