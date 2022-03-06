@@ -20,7 +20,8 @@
   <application android:label="@@APPNAME@@"
                android:icon="@drawable/ic_launcher"
                android:banner="@drawable/banner"
-               android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+               android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+	  	android:hardwareAccelerated="true">
     <service android:name="CoreService"
              android:label="@@APPNAME@@"/>
 
