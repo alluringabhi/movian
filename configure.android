@@ -48,8 +48,8 @@ for opt do
             SDK="$optval"
             ;;
         --kind=api16_armv7)
-            ANDROID_MIN_SDK_VERSION=16
-            ANDROID_TARGET_SDK_VERSION=26
+            ANDROID_MIN_SDK_VERSION=15
+            ANDROID_TARGET_SDK_VERSION=21
             TOOLCHAIN_NAME=arm-linux-androideabi-4.9
             ANDROID_BUILDKIND_DESCRIMINATOR=1
             ANDROID_ABI=armeabi
@@ -58,12 +58,12 @@ for opt do
             ARCH_CFLAGS="-march=armv7-a -mfloat-abi=softfp -mfpu=neon -funwind-tables -fPIC"
             ARCH_LDFLAGS="-march=armv7-a -Wl,--fix-cortex-a8"
             LIBAV_ARCH_FLAGS="--cross-prefix=${TOOLCHAIN} --enable-cross-compile --arch=armv7 --target-os=android --enable-shared --disable-static --as=${TOOLCHAIN}gcc"
-            CC=${TOOLCHAIN}gcc
-            CXX=${TOOLCHAIN}g++
+            CC=${TOOLCHAIN}clang
+            CXX=${TOOLCHAIN}clang++
             ;;
         --kind=api16_x86)
-            ANDROID_MIN_SDK_VERSION=16
-            ANDROID_TARGET_SDK_VERSION=26
+            ANDROID_MIN_SDK_VERSION=15
+            ANDROID_TARGET_SDK_VERSION=21
             TOOLCHAIN_NAME=x86-linux
             ANDROID_ABI=x86
             ANDROID_BUILDKIND_DESCRIMINATOR=2
@@ -71,8 +71,8 @@ for opt do
             TOOLCHAIN=${TOPDIR}/build.${BUILD}/toolchain/bin/i686-linux-android-
             ARCH_CFLAGS="-fPIC"
             LIBAV_ARCH_FLAGS="--cross-prefix=${TOOLCHAIN} --enable-cross-compile --arch=x86 --target-os=android --enable-shared --disable-static --as=${TOOLCHAIN}gcc --disable-inline-asm"
-            CC="${TOOLCHAIN}gcc -mstackrealign"
-            CXX="${TOOLCHAIN}g++ -mstackrealign"
+            CC="${TOOLCHAIN}clang -mstackrealign"
+            CXX="${TOOLCHAIN}clang++ -mstackrealign"
             ;;
         *)
             common_opt $opt $optval
