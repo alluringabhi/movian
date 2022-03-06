@@ -25,7 +25,7 @@ enable glw_frontend_ps3
 enable glw_backend_rsx
 enable glw
 enable polarssl
-enable librtmp
+#enable librtmp
 enable httpserver
 enable dvd
 enable sqlite_vfs
